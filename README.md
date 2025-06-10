@@ -21,3 +21,12 @@ npm install @types/express @types/mongoose @types/jsonwebtoken @types/bcryptjs @
 npx tsc --init
 
 ```
+
+### Middlewares important
+
+```bash
+
+npm i morgan helmet express-rate-limit
+npm i --save-dev @types/morgan
+
+```

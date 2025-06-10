@@ -14,7 +14,7 @@ npm install @types/express @types/mongoose @types/jsonwebtoken @types/bcryptjs @
 
 ```
 
-# Initialiser TypeScript
+### Initialiser TypeScript
 
 ```bash
 

@@ -1,20 +1,21 @@
 // src/app.ts
-import express, { Application, Response } from "express";
+import express, { Application, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-
-// les importations
-import connectDB from "./config/db";
-import errorMiddleware from "./middlewares/errorMiddleware";
+import cors from "cors";
 
 // Charger les variables d'environnement
 dotenv.config();
 
-// Connecter à la base de données
-connectDB();
+// les importations
+import connectDB from "./config/db";
+import { APP_ORIGIN, NODE_ENV, PORT } from "./constants/env";
+import errorHandler from "./middlewares/errorMiddleware";
+import { OK } from "./constants/http";
+import authRoute from "./routes/auth.route";
 
 const app: Application = express();
 
@@ -31,22 +32,34 @@ app.use(
     limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
     standardHeaders: "draft-8", // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-    message: "Trop de requêtes entrante, attendre dans 15 minutes",
+    message: "Trop de requêtes entrantes, attendre dans 15 minutes",
+  })
+);
+app.use(
+  cors({
+    origin: APP_ORIGIN,
+    credentials: true,
   })
 );
 
 // Routes
+app.use("/api/auth", authRoute);
 
 // Route de test
-app.get("/", (_req, res: Response) => {
-  res.status(200).json({ message: "Bienvenue sur mon application" });
+app.get("/", (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    // throw new Error("Il y a erreur");
+    res.status(OK).json({ message: "Bienvenue sur mon application" });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Middlewares de gestion d'erreurs (doivent être après toutes les routes)
-app.use(errorMiddleware);
+app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+app.listen(PORT, async () => {
+  // Connecter à la base de données
+  connectDB();
+  console.log(`Serveur demarre en mode ${NODE_ENV} au port ${PORT}`);
 });

@@ -1,5 +1,5 @@
 // src/app.ts
-import express, { Application } from "express";
+import express, { Application, Response } from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 
 // les importations
 import connectDB from "./config/db";
+import errorMiddleware from "./middlewares/errorMiddleware";
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -37,11 +38,12 @@ app.use(
 // Routes
 
 // Route de test
-app.get("/", (_req, res) => {
+app.get("/", (_req, res: Response) => {
   res.status(200).json({ message: "Bienvenue sur mon application" });
 });
 
 // Middlewares de gestion d'erreurs (doivent être après toutes les routes)
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 
